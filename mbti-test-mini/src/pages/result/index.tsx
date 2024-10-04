@@ -1,20 +1,47 @@
-import { View, Image } from '@tarojs/components';
-import headbg from '../../assets/headbg.jpeg';
+import { View, Image } from "@tarojs/components";
+import headbg from "../../assets/headbg.jpeg";
 // eslint-disable-next-line import/first
-import { AtButton } from 'taro-ui';
-import './index.scss';
+import { AtButton } from "taro-ui";
+import "./index.scss";
+import questionResults from "../../data/question_results.json";
+import questions from "../../data/questions.json";
 import GlobalFooter from "../../components/GlobalFooter";
+// eslint-disable-next-line import/first
+import Taro from "@tarojs/taro";
+import {getBestQuestionResult} from "../../utils/bizUtils";
 
+/**
+ * 测试结果页面
+ */
 export default () => {
+  const answerList = Taro.getStorageSync('answerList');
+
+  //获取答案
+  if(!answerList || answerList.length < 1){
+    Taro.showToast({
+      title: '答案为空',
+      icon: 'error',
+      duration: 3000
+    })
+  }
+  //计算结果
+  const result = getBestQuestionResult(answerList, questions, questionResults);
   return (
-    <View className='indexPage'>
-      <View className='at-article__h1 title'>
-        MBTI 性格测试
-      </View>
-      <View className='at-article__h2 subTitle'>
-        只需2分钟，就能非常准确地描述出你是谁，以及你的性格特点
-      </View>
-      <AtButton type='primary' circle className='enterBtn'>开始测试</AtButton>
+    <View className='resultPage'>
+      <View className='at-article__h1 title'>{result.resultName}</View>
+      <View className='at-article__h2 subTitle'>{result.resultDesc}</View>
+      <AtButton
+        type='primary'
+        circle
+        className='enterBtn'
+        onClick={() => {
+          Taro.reLaunch({
+            url: "/pages/index/index",
+          });
+        }}
+      >
+        返回主页
+      </AtButton>
       <Image className='headerBg' src={headbg} />
       <GlobalFooter />
     </View>
