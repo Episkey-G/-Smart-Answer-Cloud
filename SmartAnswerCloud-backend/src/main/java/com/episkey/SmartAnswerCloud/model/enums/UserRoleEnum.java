@@ -33,7 +33,9 @@ public enum UserRoleEnum {
      * @return
      */
     public static List<String> getValues() {
-        return Arrays.stream(values()).map(item -> item.value).collect(Collectors.toList());
+        return Arrays.stream(values())
+                .map(item -> item.value)
+                .collect(Collectors.toList());
     }
 
     /**

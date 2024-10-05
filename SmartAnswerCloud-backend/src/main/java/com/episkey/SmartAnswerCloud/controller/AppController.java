@@ -2,10 +2,7 @@ package com.episkey.SmartAnswerCloud.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.episkey.SmartAnswerCloud.annotation.AuthCheck;
-import com.episkey.SmartAnswerCloud.common.BaseResponse;
-import com.episkey.SmartAnswerCloud.common.DeleteRequest;
-import com.episkey.SmartAnswerCloud.common.ErrorCode;
-import com.episkey.SmartAnswerCloud.common.ResultUtils;
+import com.episkey.SmartAnswerCloud.common.*;
 import com.episkey.SmartAnswerCloud.constant.UserConstant;
 import com.episkey.SmartAnswerCloud.exception.BusinessException;
 import com.episkey.SmartAnswerCloud.exception.ThrowUtils;
@@ -18,12 +15,14 @@ import com.episkey.SmartAnswerCloud.model.entity.User;
 import com.episkey.SmartAnswerCloud.model.vo.AppVO;
 import com.episkey.SmartAnswerCloud.service.AppService;
 import com.episkey.SmartAnswerCloud.service.UserService;
+import com.episkey.SmartAnswerCloud.model.enums.ReviewStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 
 /**
  * 应用接口
@@ -61,6 +60,7 @@ public class AppController {
         // 填充默认值
         User loginUser = userService.getLoginUser(request);
         app.setUserId(loginUser.getId());
+        app.setReviewStatus(ReviewStatusEnum.REVIEWING.getValue());
         // 写入数据库
         boolean result = appService.save(app);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
@@ -228,6 +228,8 @@ public class AppController {
         if (!oldApp.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
+        // 重置审核状态
+        app.setReviewStatus(ReviewStatusEnum.REVIEWING.getValue());
         // 操作数据库
         boolean result = appService.updateById(app);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
@@ -235,4 +237,38 @@ public class AppController {
     }
 
     // endregion
+
+    /**
+     * 审核应用（仅管理员可用）
+     *
+     */
+    @PostMapping("/review")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> doAppReview(@RequestBody ReviewRequest reviewRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(reviewRequest == null || reviewRequest.getId() <= 0, ErrorCode.PARAMS_ERROR);
+        Long id = reviewRequest.getId();
+        Integer reviewStatus = reviewRequest.getReviewStatus();
+        // 校验
+        ReviewStatusEnum reviewStatusEnum = ReviewStatusEnum.getEnumByValue(reviewStatus);
+        if (id == null || reviewStatusEnum == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 判断是否存在
+        App oldApp = appService.getById(id);
+        ThrowUtils.throwIf(oldApp == null, ErrorCode.NOT_FOUND_ERROR);
+        // 已是该状态
+        if (oldApp.getReviewStatus().equals(reviewStatus)) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "请勿重复审核");
+        }
+        // 更新审核状态
+        User loginUser = userService.getLoginUser(request);
+        App app = new App();
+        app.setId(id);
+        app.setReviewStatus(reviewStatus);
+        app.setReviewerId(loginUser.getId());
+        app.setReviewTime(new Date());
+        boolean result = appService.updateById(app);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(true);
+    }
 }
