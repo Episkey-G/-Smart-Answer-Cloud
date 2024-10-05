@@ -14,15 +14,15 @@ import java.util.stream.Collectors;
  */
 public enum ReviewStatusEnum {
 
-    REVIEWING("待审核", "0"),
-    PASS("通过", "1"),
-    REJECT("拒绝", "2");
+    REVIEWING("待审核", 0),
+    PASS("通过", 1),
+    REJECT("拒绝", 2);
 
     private final String text;
 
-    private final String value;
+    private final int value;
 
-    ReviewStatusEnum(String text, String value) {
+    ReviewStatusEnum(String text, int value) {
         this.text = text;
         this.value = value;
     }
@@ -32,7 +32,7 @@ public enum ReviewStatusEnum {
      *
      * @return
      */
-    public static List<String> getValues() {
+    public static List<Integer> getValues() {
         return Arrays.stream(values()).map(item -> item.value).collect(Collectors.toList());
     }
 
@@ -42,19 +42,19 @@ public enum ReviewStatusEnum {
      * @param value
      * @return
      */
-    public static ReviewStatusEnum getEnumByValue(String value) {
+    public static ReviewStatusEnum getEnumByValue(Integer value) {
         if (ObjectUtils.isEmpty(value)) {
             return null;
         }
         for (ReviewStatusEnum anEnum : ReviewStatusEnum.values()) {
-            if (anEnum.value.equals(value)) {
+            if (anEnum.value == value) {
                 return anEnum;
             }
         }
         return null;
     }
 
-    public String getValue() {
+    public int getValue() {
         return value;
     }
 

@@ -14,14 +14,14 @@ import java.util.stream.Collectors;
  */
 public enum AppTypeEnum {
 
-    SCORE("得分类", "0"),
-    TEST("测评类", "1");
+    SCORE("得分类", 0),
+    TEST("测评类", 1);
 
     private final String text;
 
-    private final String value;
+    private final int value;
 
-    AppTypeEnum(String text, String value) {
+    AppTypeEnum(String text, int value) {
         this.text = text;
         this.value = value;
     }
@@ -31,7 +31,7 @@ public enum AppTypeEnum {
      *
      * @return
      */
-    public static List<String> getValues() {
+    public static List<Integer> getValues() {
         return Arrays.stream(values()).map(item -> item.value).collect(Collectors.toList());
     }
 
@@ -41,19 +41,19 @@ public enum AppTypeEnum {
      * @param value
      * @return
      */
-    public static AppTypeEnum getEnumByValue(String value) {
+    public static AppTypeEnum getEnumByValue(int value) {
         if (ObjectUtils.isEmpty(value)) {
             return null;
         }
         for (AppTypeEnum anEnum : AppTypeEnum.values()) {
-            if (anEnum.value.equals(value)) {
+            if (anEnum.value == value) {
                 return anEnum;
             }
         }
         return null;
     }
 
-    public String getValue() {
+    public int getValue() {
         return value;
     }
 
