@@ -30,11 +30,11 @@ public enum UserRoleEnum {
     /**
      * 获取值列表
      *
-     * @return
+     * @return List<String>
      */
     public static List<String> getValues() {
         return Arrays.stream(values())
-                .map(item -> item.value)
+                .map(UserRoleEnum::getValue)
                 .collect(Collectors.toList());
     }
 
@@ -48,12 +48,10 @@ public enum UserRoleEnum {
         if (ObjectUtils.isEmpty(value)) {
             return null;
         }
-        for (UserRoleEnum anEnum : UserRoleEnum.values()) {
-            if (anEnum.value.equals(value)) {
-                return anEnum;
-            }
-        }
-        return null;
+        return Arrays.stream(values())
+                .filter(anEnum -> anEnum.value.equals(value))
+                .findFirst()
+                .orElse(null);
     }
 
     public String getValue() {

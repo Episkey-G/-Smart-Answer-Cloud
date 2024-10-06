@@ -14,9 +14,13 @@ import com.episkey.SmartAnswerCloud.model.dto.userAnswer.UserAnswerAddRequest;
 import com.episkey.SmartAnswerCloud.model.dto.userAnswer.UserAnswerEditRequest;
 import com.episkey.SmartAnswerCloud.model.dto.userAnswer.UserAnswerQueryRequest;
 import com.episkey.SmartAnswerCloud.model.dto.userAnswer.UserAnswerUpdateRequest;
+import com.episkey.SmartAnswerCloud.model.entity.App;
 import com.episkey.SmartAnswerCloud.model.entity.UserAnswer;
 import com.episkey.SmartAnswerCloud.model.entity.User;
+import com.episkey.SmartAnswerCloud.model.enums.ReviewStatusEnum;
 import com.episkey.SmartAnswerCloud.model.vo.UserAnswerVO;
+import com.episkey.SmartAnswerCloud.scoring.ScoringStrategyExecutor;
+import com.episkey.SmartAnswerCloud.service.AppService;
 import com.episkey.SmartAnswerCloud.service.UserAnswerService;
 import com.episkey.SmartAnswerCloud.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +47,12 @@ public class UserAnswerController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private AppService appService;
+
+    @Resource
+    private ScoringStrategyExecutor scoringStrategyExecutor;
+
     // region 增删改查
 
     /**
@@ -63,6 +73,13 @@ public class UserAnswerController {
         userAnswer.setChoices(JSONUtil.toJsonStr(choices));
         // 数据校验
         userAnswerService.validUserAnswer(userAnswer, true);
+        // 判断 app 是否存在
+        long appId = userAnswer.getAppId();
+        App app = appService.getById(appId);
+        ThrowUtils.throwIf(app == null, ErrorCode.NOT_FOUND_ERROR);
+        if (!ReviewStatusEnum.PASS.equals(ReviewStatusEnum.getEnumByValue(app.getReviewStatus()))) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "应用未通过审核");
+        }
         // 填充默认值
         User loginUser = userService.getLoginUser(request);
         userAnswer.setUserId(loginUser.getId());
@@ -71,6 +88,15 @@ public class UserAnswerController {
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         // 返回新写入的数据 id
         long newUserAnswerId = userAnswer.getId();
+        // 调用评分模块
+        try {
+            UserAnswer userAnswerWithResult = scoringStrategyExecutor.doScore(choices, app);
+            userAnswerWithResult.setId(newUserAnswerId);
+            userAnswerService.updateById(userAnswerWithResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "评分失败");
+        }
         return ResultUtils.success(newUserAnswerId);
     }
 

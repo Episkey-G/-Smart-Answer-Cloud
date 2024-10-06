@@ -56,29 +56,26 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         Integer appType = app.getAppType();
         Integer scoringStrategy = app.getScoringStrategy();
         Integer reviewStatus = app.getReviewStatus();
-        Properties errorProperties = ThrowUtils.getErrorProperties();
+
         // 创建数据时，参数不能为空
         if (add) {
             // 补充校验规则
-            ThrowUtils.throwIf(StringUtils.isBlank(appName), ErrorCode.PARAMS_ERROR, errorProperties.getProperty("APP_NAME_REQUIRED_MESSAGE"));
-            ThrowUtils.throwIf(StringUtils.isBlank(appDesc), ErrorCode.PARAMS_ERROR, errorProperties.getProperty("APP_DESC_REQUIRED_MESSAGE"));
-            ReviewStatusEnum reviewStatusEnum = ReviewStatusEnum.getEnumByValue(reviewStatus);
+            ThrowUtils.throwIf(StringUtils.isBlank(appName), ErrorCode.PARAMS_ERROR, "应用名称不能为空");
+            ThrowUtils.throwIf(StringUtils.isBlank(appDesc), ErrorCode.PARAMS_ERROR, "应用描述不能为空");
             AppTypeEnum appTypeEnum = AppTypeEnum.getEnumByValue(appType);
-            ThrowUtils.throwIf(appTypeEnum == null, ErrorCode.PARAMS_ERROR, errorProperties.getProperty("APP_TYPE_INVALID_MESSAGE"));
-            AppScoringStrategyEnum appScoringStrategyEnum = AppScoringStrategyEnum.getEnumByValue(scoringStrategy);
-            ThrowUtils.throwIf(appScoringStrategyEnum == null, ErrorCode.PARAMS_ERROR, errorProperties.getProperty("SCORING_STRATEGY_INVALID_MESSAGE"));
+            ThrowUtils.throwIf(appTypeEnum == null, ErrorCode.PARAMS_ERROR, "应用类别非法");
+            AppScoringStrategyEnum scoringStrategyEnum = AppScoringStrategyEnum.getEnumByValue(scoringStrategy);
+            ThrowUtils.throwIf(scoringStrategyEnum == null, ErrorCode.PARAMS_ERROR, "应用评分策略非法");
         }
         // 修改数据时，有参数则校验
         // 补充校验规则
         if (StringUtils.isNotBlank(appName)) {
-            ThrowUtils.throwIf(appName.length() > 80, ErrorCode.PARAMS_ERROR, errorProperties.getProperty("APP_NAME_TOO_LONG_MESSAGE"));
+            ThrowUtils.throwIf(appName.length() > 80, ErrorCode.PARAMS_ERROR, "应用名称要小于 80");
         }
         if (reviewStatus != null) {
             ReviewStatusEnum reviewStatusEnum = ReviewStatusEnum.getEnumByValue(reviewStatus);
-            ThrowUtils.throwIf(reviewStatusEnum == null, ErrorCode.PARAMS_ERROR, errorProperties.getProperty("REVIEW_STATUS_INVALID_MESSAGE"));
+            ThrowUtils.throwIf(reviewStatusEnum == null, ErrorCode.PARAMS_ERROR, "审核状态非法");
         }
-
-
     }
 
     /**
@@ -108,6 +105,8 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         String searchText = appQueryRequest.getSearchText();
         String sortField = appQueryRequest.getSortField();
         String sortOrder = appQueryRequest.getSortOrder();
+
+
 
         // 补充需要的查询条件
         // 从多字段中搜索
