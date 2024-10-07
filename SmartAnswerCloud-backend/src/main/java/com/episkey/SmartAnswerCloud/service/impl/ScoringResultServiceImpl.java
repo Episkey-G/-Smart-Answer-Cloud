@@ -54,7 +54,6 @@ public class ScoringResultServiceImpl extends ServiceImpl<ScoringResultMapper, S
         ThrowUtils.throwIf(scoringResult == null, ErrorCode.PARAMS_ERROR);
         // 从对象中取值
         String resultName = scoringResult.getResultName();
-        String resultDesc = scoringResult.getResultDesc();
         Long appId = scoringResult.getAppId();
         // 创建数据时，参数不能为空
         if (add) {

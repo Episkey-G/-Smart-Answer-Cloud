@@ -74,7 +74,7 @@ public class UserAnswerController {
         // 数据校验
         userAnswerService.validUserAnswer(userAnswer, true);
         // 判断 app 是否存在
-        long appId = userAnswer.getAppId();
+        Long appId = userAnswer.getAppId();
         App app = appService.getById(appId);
         ThrowUtils.throwIf(app == null, ErrorCode.NOT_FOUND_ERROR);
         if (!ReviewStatusEnum.PASS.equals(ReviewStatusEnum.getEnumByValue(app.getReviewStatus()))) {

@@ -106,8 +106,6 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         String sortField = appQueryRequest.getSortField();
         String sortOrder = appQueryRequest.getSortOrder();
 
-
-
         // 补充需要的查询条件
         // 从多字段中搜索
         if (StringUtils.isNotBlank(searchText)) {
@@ -118,15 +116,14 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         queryWrapper.like(StringUtils.isNotBlank(appName), "appName", appName);
         queryWrapper.like(StringUtils.isNotBlank(appDesc), "appDesc", appDesc);
         queryWrapper.like(StringUtils.isNotBlank(reviewMessage), "reviewMessage", reviewMessage);
-
         // 精确查询
         queryWrapper.eq(StringUtils.isNotBlank(appIcon), "appIcon", appIcon);
+        queryWrapper.ne(ObjectUtils.isNotEmpty(notId), "id", notId);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjectUtils.isNotEmpty(appType), "appType", appType);
         queryWrapper.eq(ObjectUtils.isNotEmpty(scoringStrategy), "scoringStrategy", scoringStrategy);
         queryWrapper.eq(ObjectUtils.isNotEmpty(reviewStatus), "reviewStatus", reviewStatus);
         queryWrapper.eq(ObjectUtils.isNotEmpty(reviewerId), "reviewerId", reviewerId);
-        queryWrapper.ne(ObjectUtils.isNotEmpty(notId), "id", notId);
-        queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
         // 排序规则
         queryWrapper.orderBy(SqlUtils.validSortField(sortField),

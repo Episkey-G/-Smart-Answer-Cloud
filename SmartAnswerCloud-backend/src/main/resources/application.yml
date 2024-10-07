@@ -76,3 +76,6 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.episkey.SmartAnswerCloud.controller
+# AI 配置
+ai:
+  apiKey: 7f702af3224f3b09b36abce4b55ed383.ePvWvDVE8Yk8AjGg
